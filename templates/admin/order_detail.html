@@ -1,0 +1,124 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block admin_title %}Order #{{ order.id }} Details{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Order Details: #{{ order.id }}</h1>
+    <a href="{{ url_for('admin_orders') }}" class="btn btn-sm btn-outline-secondary">Back to Orders</a>
+</div>
+
+<div class="row">
+    <!-- Order Information -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                Order Information
+            </div>
+            <div class="card-body">
+                <p><strong>Order ID:</strong> #{{ order.id }}</p>
+                <p><strong>Date Placed:</strong> {{ order.order_date.strftime('%Y-%m-%d %H:%M:%S') }} UTC</p>
+                <p><strong>Total Amount:</strong> €{{ "%.2f"|format(order.total_amount) }}</p>
+                <p><strong>Current Status:</strong>
+                    <span class="badge
+                        {% if order.status == 'pending' %}bg-warning text-dark
+                        {% elif order.status == 'processing' %}bg-info text-dark
+                        {% elif order.status == 'shipped' %}bg-success
+                        {% elif order.status == 'cancelled' %}bg-danger
+                        {% else %}bg-secondary
+                        {% endif %}">
+                        {{ order.status | capitalize }}
+                    </span>
+                </p>
+                <hr>
+                <form action="{{ url_for('admin_update_order_status', order_id=order.id) }}" method="POST">
+                    <div class="input-group">
+                        <label class="input-group-text" for="statusSelect">Update Status:</label>
+                        <select class="form-select" id="statusSelect" name="status">
+                            {% for status in order_statuses %}
+                            <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>{{ status | capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Information -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                Customer & Shipping Information
+            </div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ order.customer_name }}</p>
+                <p><strong>Email:</strong> <a href="mailto:{{ order.customer_email }}">{{ order.customer_email }}</a></p>
+                <p><strong>Phone:</strong> {{ order.customer_phone or 'N/A' }}</p>
+                <p><strong>Shipping Address:</strong><br>{{ order.shipping_address | nl2br | safe }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Items -->
+<div class="row">
+    <div class="col-12">
+        <h3 class="mt-4 mb-3">Items in this Order</h3>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width: 10%;">Image</th>
+                        <th scope="col" style="width: 40%;">Product</th>
+                        <th scope="col" class="text-center" style="width: 10%;">Quantity</th>
+                        <th scope="col" class="text-end" style="width: 15%;">Price at Purchase</th>
+                        <th scope="col" class="text-end" style="width: 15%;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items %}
+                    <tr>
+                        <td>
+                            {% if item.product %}
+                            <a href="{{ url_for('product_detail', product_id=item.product.id) }}" target="_blank">
+                                <img src="{{ url_for('static', filename='images/products/' + (item.product.image_url or 'default.jpg')) }}" alt="{{ item.product.name }}" class="img-thumbnail" style="max-height: 60px;">
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">Product Deleted</span>
+                             <img src="{{ url_for('static', filename='images/products/default.jpg') }}" alt="Deleted Product" class="img-thumbnail" style="max-height: 60px;">
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.product %}
+                                <a href="{{ url_for('product_detail', product_id=item.product.id) }}" target="_blank" class="text-decoration-none text-dark fw-bold">{{ item.product.name }}</a>
+                                <small class="d-block text-muted">ID: {{ item.product_id }}</small>
+                            {% else %}
+                                <span class="text-muted">Product ID: {{ item.product_id }} (Deleted)</span>
+                            {% endif %}
+                            {% if item.size_selected or item.color_selected %}
+                            <small class="d-block text-muted">
+                                {% if item.size_selected %}Size: {{ item.size_selected }}{% endif %}
+                                {% if item.color_selected %}{% if item.size_selected %}, {% endif %}Color: {{ item.color_selected }}{% endif %}
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-end">€{{ "%.2f"|format(item.price_at_purchase) }}</td>
+                        <td class="text-end fw-bold">€{{ "%.2f"|format(item.price_at_purchase * item.quantity) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                 <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-end fw-bold border-top">Order Total:</td>
+                        <td class="text-end fw-bold fs-5 border-top">€{{ "%.2f"|format(order.total_amount) }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

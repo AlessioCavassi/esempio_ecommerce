@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Products - ShoeStore{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6">Our Products</h1>
+            <p class="text-muted">Browse our collection of high-quality shoes.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filters Sidebar (Optional - Placeholder) -->
+        <div class="col-lg-3 mb-4 mb-lg-0">
+            <h4>Filters</h4>
+            <hr>
+            <!-- Category Filter -->
+            <div class="mb-3">
+                <h6>Category</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('products_list') }}" class="text-decoration-none {% if not request.args.get('category') %}fw-bold{% endif %}">All Categories</a></li>
+                    {% for category in categories %}
+                    <li><a href="{{ url_for('products_list', category=category.id) }}" class="text-decoration-none {% if request.args.get('category')|int == category.id %}fw-bold{% endif %}">{{ category.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <!-- TODO: Add filters for Size, Color, Price Range -->
+            <div class="mb-3">
+                <h6>Sort By</h6>
+                <select class="form-select form-select-sm" onchange="window.location.href = this.value;">
+                    <option value="{{ url_for('products_list', sort='name_asc', **request.args) }}" {% if request.args.get('sort') == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+                    <option value="{{ url_for('products_list', sort='name_desc', **request.args) }}" {% if request.args.get('sort') == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+                    <option value="{{ url_for('products_list', sort='price_asc', **request.args) }}" {% if request.args.get('sort') == 'price_asc' %}selected{% endif %}>Price (Low to High)</option>
+                    <option value="{{ url_for('products_list', sort='price_desc', **request.args) }}" {% if request.args.get('sort') == 'price_desc' %}selected{% endif %}>Price (High to Low)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="col-lg-9">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% if products.items %}
+                    {% for product in products.items %}
+                    <div class="col">
+                        <div class="card product-card h-100">
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}">
+                                <img src="{{ url_for('static', filename='images/products/' + (product.image_url or 'default.jpg')) }}" class="card-img-top" alt="{{ product.name }}">
+                            </a>
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="text-decoration-none text-dark">{{ product.name }}</a>
+                                </h5>
+                                <p class="card-text text-muted small">{{ product.category.name }}</p>
+                                <div>
+                                    <p class="product-price mb-2">€{{ "%.2f"|format(product.price) }}</p>
+                                    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <p class="text-center text-muted">No products found matching your criteria.</p>
+                         {% if config.DEBUG %}
+                            <p class="text-center small text-warning">Admin: Add some products via the <a href="{{ url_for('admin_products') }}">admin panel</a>.</p>
+                         {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Pagination -->
+            {% if products.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <!-- Previous Page Link -->
+                    <li class="page-item {% if not products.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('products_list', page=products.prev_num, **request.args) if products.has_prev else '#' }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+
+                    <!-- Page Numbers -->
+                    {% for page_num in products.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            <li class="page-item {% if products.page == page_num %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('products_list', page=page_num, **request.args) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    <!-- Next Page Link -->
+                    <li class="page-item {% if not products.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('products_list', page=products.next_num, **request.args) if products.has_next else '#' }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart - ShoeStore{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Your Shopping Cart</h1>
+
+    {% if cart_items %}
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th scope="col" style="width: 15%;">Product</th>
+                    <th scope="col" style="width: 35%;"></th>
+                    <th scope="col" class="text-center" style="width: 10%;">Price</th>
+                    <th scope="col" class="text-center" style="width: 15%;">Quantity</th>
+                    <th scope="col" class="text-center" style="width: 15%;">Subtotal</th>
+                    <th scope="col" class="text-center" style="width: 10%;">Remove</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('product_detail', product_id=item.product.id) }}">
+                            <img src="{{ url_for('static', filename='images/products/' + (item.product.image_url or 'default.jpg')) }}" alt="{{ item.product.name }}" class="img-thumbnail" style="max-height: 75px;">
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('product_detail', product_id=item.product.id) }}" class="text-decoration-none text-dark fw-bold">{{ item.product.name }}</a>
+                        {% if item.size or item.color %}
+                        <small class="d-block text-muted">
+                            {% if item.size %}Size: {{ item.size }}{% endif %}
+                            {% if item.color %}{% if item.size %}, {% endif %}Color: {{ item.color }}{% endif %}
+                        </small>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">€{{ "%.2f"|format(item.product.price) }}</td>
+                    <td class="text-center">
+                        <form action="{{ url_for('update_cart', product_id=item.product.id) }}" method="POST" class="d-inline-flex align-items-center justify-content-center">
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock_quantity }}" class="form-control form-control-sm" style="width: 70px;" required>
+                            <button type="submit" class="btn btn-outline-secondary btn-sm ms-2" title="Update Quantity">Update</button>
+                        </form>
+                    </td>
+                    <td class="text-center fw-bold">€{{ "%.2f"|format(item.subtotal) }}</td>
+                    <td class="text-center">
+                        <form action="{{ url_for('remove_from_cart', product_id=item.product.id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-sm" title="Remove Item">&times;</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" class="text-end fw-bold">Total:</td>
+                    <td class="text-center fw-bold fs-5">€{{ "%.2f"|format(cart_total_price) }}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{{ url_for('products_list') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i> Continue Shopping
+        </a>
+        <a href="{{ url_for('checkout') }}" class="btn btn-primary btn-lg">
+            Proceed to Checkout <i class="fas fa-arrow-right ms-2"></i>
+        </a>
+    </div>
+
+    {% else %}
+    <div class="alert alert-info text-center" role="alert">
+        Your shopping cart is empty. <a href="{{ url_for('products_list') }}" class="alert-link">Start shopping!</a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

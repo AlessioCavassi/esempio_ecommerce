@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome - ShoeStore{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row mb-5 align-items-center bg-light p-5 rounded">
+        <div class="col-md-6">
+            <h1 class="display-4 fw-bold">Step Up Your Style</h1>
+            <p class="lead">Discover our latest collection of premium shoes. Comfort, style, and quality delivered to your doorstep.</p>
+            <a href="{{ url_for('products_list') }}" class="btn btn-primary btn-lg">Shop Now</a>
+        </div>
+        <div class="col-md-6 text-center">
+            <!-- Placeholder for a nice shoe image -->
+            <img src="{{ url_for('static', filename='images/hero_placeholder.png') }}" alt="Featured Shoe" class="img-fluid rounded" style="max-height: 300px;">
+        </div>
+    </div>
+
+    <!-- Featured Categories/Products Section -->
+    <div class="row text-center mb-4">
+        <div class="col">
+            <h2>Featured Products</h2>
+            <p class="text-muted">Check out some of our best sellers</p>
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        {% if featured_products %}
+            {% for product in featured_products %}
+            <div class="col">
+                <div class="card product-card h-100">
+                     <a href="{{ url_for('product_detail', product_id=product.id) }}">
+                        <img src="{{ url_for('static', filename='images/products/' + (product.image_url or 'default.jpg')) }}" class="card-img-top" alt="{{ product.name }}">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="text-decoration-none text-dark">{{ product.name }}</a>
+                        </h5>
+                        <p class="card-text text-muted small">{{ product.category.name }}</p>
+                        <div>
+                            <p class="product-price mb-2">€{{ "%.2f"|format(product.price) }}</p>
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                            <!-- Add to Cart button can be added here or on detail page -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <p class="text-center text-muted">No featured products available yet. Check back soon!</p>
+                {% if config.DEBUG %}
+                 <p class="text-center small text-warning">Admin: Add some products via the <a href="{{ url_for('admin_products') }}">admin panel</a>.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+/* Custom CSS styles for ShoeStore */
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensure footer sticks to bottom */
+    padding-top: 56px; /* Adjust based on navbar height if fixed-top */
+}
+
+main {
+    flex: 1; /* Allow main content to grow and push footer down */
+}
+
+/* Add some basic product card styling */
+.product-card {
+    transition: transform .2s ease-in-out, box-shadow .2s ease-in-out;
+    height: 100%; /* Ensure cards in a row have same height */
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.product-card .card-img-top {
+    width: 100%;
+    height: 200px; /* Fixed height for images */
+    object-fit: cover; /* Scale image nicely */
+}
+
+.product-card .card-body {
+    flex-grow: 1; /* Allow body to expand */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Push price/button down */
+}
+
+.product-card .card-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.product-card .card-text {
+    font-size: 0.9rem;
+    color: #6c757d; /* Secondary text color */
+}
+
+.product-price {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #0d6efd; /* Primary color */
+}
+
+/* Cart badge alignment */
+.navbar .badge {
+    vertical-align: super;
+    font-size: 0.7em;
+}
+
+/* Footer styling */
+footer {
+    background-color: #343a40; /* Dark background */
+    color: rgba(255, 255, 255, 0.7); /* Lighter text */
+}
+
+footer p {
+    margin-bottom: 0.25rem;
+}
+
+/* Responsive adjustments if needed */
+@media (max-width: 768px) {
+    .product-card .card-img-top {
+        height: 150px; /* Smaller images on smaller screens */
+    }
+}
+
+/* Admin specific styles can go here */
+.admin-section {
+    margin-bottom: 2rem;
+}

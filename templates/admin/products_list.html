@@ -1,0 +1,89 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block admin_title %}Manage Products{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Manage Products</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin_add_product') }}" class="btn btn-sm btn-success">
+            Add New Product
+        </a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm align-middle">
+        <thead>
+            <tr>
+                <th scope="col" style="width: 5%;">#</th>
+                <th scope="col" style="width: 10%;">Image</th>
+                <th scope="col" style="width: 30%;">Name</th>
+                <th scope="col" style="width: 15%;">Category</th>
+                <th scope="col" class="text-end" style="width: 10%;">Price</th>
+                <th scope="col" class="text-center" style="width: 10%;">Stock</th>
+                <th scope="col" class="text-center" style="width: 20%;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if products.items %}
+                {% for product in products.items %}
+                <tr>
+                    <td>{{ product.id }}</td>
+                    <td>
+                        <img src="{{ url_for('static', filename='images/products/' + (product.image_url or 'default.jpg')) }}" alt="{{ product.name }}" class="img-thumbnail" style="max-height: 50px;">
+                    </td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category.name }}</td>
+                    <td class="text-end">€{{ "%.2f"|format(product.price) }}</td>
+                    <td class="text-center">{{ product.stock_quantity }}</td>
+                    <td class="text-center">
+                        <a href="{{ url_for('admin_edit_product', product_id=product.id) }}" class="btn btn-primary btn-sm" title="Edit">Edit</a>
+                        <form action="{{ url_for('admin_delete_product', product_id=product.id) }}" method="POST" class="d-inline delete-form">
+                            <button type="submit" class="btn btn-danger btn-sm" title="Delete">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">No products found. <a href="{{ url_for('admin_add_product') }}">Add one now!</a></td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if products.pages > 1 %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <!-- Previous Page Link -->
+        <li class="page-item {% if not products.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('admin_products', page=products.prev_num) if products.has_prev else '#' }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+
+        <!-- Page Numbers -->
+        {% for page_num in products.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if page_num %}
+                <li class="page-item {% if products.page == page_num %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('admin_products', page=page_num) }}">{{ page_num }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Next Page Link -->
+        <li class="page-item {% if not products.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('admin_products', page=products.next_num) if products.has_next else '#' }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - ShoeStore{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('products_list') }}">Products</a></li>
+            {% if product.category %}
+            <li class="breadcrumb-item"><a href="{{ url_for('products_list', category=product.category.id) }}">{{ product.category.name }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-md-6 mb-4 mb-md-0">
+            <img src="{{ url_for('static', filename='images/products/' + (product.image_url or 'default.jpg')) }}" class="img-fluid rounded shadow-sm" alt="{{ product.name }}">
+            <!-- TODO: Add support for multiple images (e.g., carousel) if needed -->
+        </div>
+
+        <!-- Product Details & Add to Cart -->
+        <div class="col-md-6">
+            <h2>{{ product.name }}</h2>
+            {% if product.category %}
+            <p class="text-muted">Category: <a href="{{ url_for('products_list', category=product.category.id) }}" class="text-decoration-none">{{ product.category.name }}</a></p>
+            {% endif %}
+
+            <p class="product-price display-6 my-3">€{{ "%.2f"|format(product.price) }}</p>
+
+            <p>{{ product.description | safe }}</p> <!-- Use safe filter if description contains HTML -->
+
+            <hr>
+
+            <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST">
+                <!-- Size Selector -->
+                {% if available_sizes %}
+                <div class="mb-3">
+                    <label for="sizeSelect" class="form-label">Size:</label>
+                    <select class="form-select w-auto" id="sizeSelect" name="size" required>
+                        <option value="" selected disabled>Select Size</option>
+                        {% for size in available_sizes %}
+                        <option value="{{ size }}">{{ size }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <!-- Color Selector -->
+                {% if available_colors %}
+                <div class="mb-3">
+                    <label for="colorSelect" class="form-label">Color:</label>
+                    <select class="form-select w-auto" id="colorSelect" name="color" required>
+                         <option value="" selected disabled>Select Color</option>
+                        {% for color in available_colors %}
+                        <option value="{{ color }}">{{ color }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <!-- Quantity Selector -->
+                <div class="mb-3">
+                    <label for="quantityInput" class="form-label">Quantity:</label>
+                    <input type="number" class="form-control w-auto" id="quantityInput" name="quantity" value="1" min="1" {% if product.stock_quantity > 0 %}max="{{ product.stock_quantity }}"{% else %}disabled{% endif %} required>
+                     {% if product.stock_quantity <= 5 and product.stock_quantity > 0 %}
+                        <small class="text-danger d-block mt-1">Only {{ product.stock_quantity }} left in stock!</small>
+                    {% elif product.stock_quantity <= 0 %}
+                         <small class="text-danger d-block mt-1">Out of stock</small>
+                    {% endif %}
+                </div>
+
+                <!-- Add to Cart Button -->
+                <button type="submit" class="btn btn-primary btn-lg" {% if product.stock_quantity <= 0 %}disabled{% endif %}>
+                    <i class="fas fa-shopping-cart me-2"></i> <!-- Assuming Font Awesome is available or replace with text/SVG -->
+                    {% if product.stock_quantity > 0 %}Add to Cart{% else %}Out of Stock{% endif %}
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Optional: Related Products Section -->
+    <!-- <div class="row mt-5">
+        <div class="col">
+            <h3>You might also like</h3> -->
+            <!-- Logic to fetch and display related products -->
+        <!-- </div>
+    </div> -->
+
+</div>
+{% endblock %}
