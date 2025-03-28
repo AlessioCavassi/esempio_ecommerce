@@ -7,16 +7,21 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import secrets # For generating secret key
 import functools # For admin login decorator
+from dotenv import load_dotenv # Import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # --- Configuration ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DATABASE_PATH = os.path.join(BASE_DIR, 'database.db')
+# DATABASE_PATH = os.path.join(BASE_DIR, 'database.db') # No longer needed for SQLite path
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static/images/products')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = secrets.token_hex(16) # Generate a random secret key
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE_PATH}'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(16)) # Use env var or generate
+# Use DATABASE_URL from environment variables, default to local SQLite for dev if not set
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', f'sqlite:///{os.path.join(BASE_DIR, "database.db")}')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
